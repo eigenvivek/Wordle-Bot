@@ -1,4 +1,4 @@
-import re
+import random
 from collections import Counter
 
 
@@ -66,26 +66,43 @@ def filter_words(guess, result, words):
             words = [word for word in words if char in word and word[idx] != char]
         elif eval == "-":
             words = [word for word in words if char not in word]
+        else:
+            result = input("Invalid result, try again: ")
+            return filter_words(guess, result, words)
     return words
 
 
-def main(words, characters):
+def main(guess, words, characters):
 
-    guess = get_guess()
+    if guess is None:
+        guess = get_guess()
+    print(f"Guess: {guess}")
+
     result = input("Input the result: ")
     if result == "=====":
-        return "Congrats!"
+        print("Congrats!")
+        return
 
     words = filter_words(guess, result, words)
     best_guess = guess_word(words, characters)
-    print(best_guess)
-    return words
+    return best_guess, words
 
 
 if __name__ == "__main__":
     words = read_words()
     characters = count_characters(words)
 
+    # Pick one of the top-100 words as a starting guess
+    word_scores = {}
+    for word in words:
+        word_scores[word] = score_word(unique_characters(word), characters)
+    word_scores = sorted(word_scores.items(), key=lambda x: x[1], reverse=True)
+    word_scores = [word for word, _ in word_scores[:100]]
+    guess = random.sample(word_scores, k=1)[0]
+
     i = 1
     while i <= 6:
-        words = main(words, characters)
+        try:
+            guess, words = main(guess, words, characters)
+        except TypeError:
+            break
