@@ -21,8 +21,26 @@ def get_guess():
     if len(guess) != 5:
         print("Word must be 5 letters long.")
         return get_guess()
+    if not guess.isalpha():
+        print("Invalid word.")
+        return get_guess()
     else:
         return guess
+
+
+def get_evalulation():
+    evalulation = input("Input the result: ")
+    for char in evalulation:
+        if char not in "=+-":
+            print("Invalid result, use '=', '+', or '-'.")
+            return get_guess()
+    if len(evalulation) != 5:
+        print("Result must be 5 characters long.")
+        return get_guess()
+    if evalulation == "=====":
+        print("Congrats!")
+        return None
+    return evalulation
 
 
 def unique_characters(word):
@@ -74,14 +92,9 @@ def filter_words(guess, result, words):
 
 def main(guess, words, characters):
 
-    if guess is None:
-        guess = get_guess()
-    print(f"Guess: {guess}")
-
-    result = input("Input the result: ")
-    if result == "=====":
-        print("Congrats!")
-        return
+    # Input a guess and get the result
+    guess = get_guess()
+    result = get_evalulation()
 
     words = filter_words(guess, result, words)
     best_guess = guess_word(words, characters)
