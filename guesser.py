@@ -1,4 +1,3 @@
-import random
 from collections import Counter
 
 
@@ -33,12 +32,11 @@ def get_evalulation():
     for char in evalulation:
         if char not in "=+-":
             print("Invalid result, use '=', '+', or '-'.")
-            return get_guess()
+            return get_evalulation()
     if len(evalulation) != 5:
         print("Result must be 5 characters long.")
-        return get_guess()
+        return get_evalulation()
     if evalulation == "=====":
-        print("Congrats!")
         return None
     return evalulation
 
@@ -74,6 +72,8 @@ def filter_word_bank(guess, result, words):
     result : "=" for correct char and place, "+" for correct char wrong place, "-" for incorrect char
     """
     # TODO: Redo this with regex
+    if result is None:
+        return None
     for idx, (char, eval) in enumerate(zip(guess, result)):
         if eval == "=":
             words = [word for word in words if word[idx] == char]
@@ -110,7 +110,8 @@ if __name__ == "__main__":
 
     n_tries = 1
     while n_tries <= 6:
-        try:
-            words = main(words, characters)
-            n_tries += 1
+        words = main(words, characters)
+        if words is None:
+            print(f"Congratulations! You won in {n_tries}!")
             break
+        n_tries += 1
