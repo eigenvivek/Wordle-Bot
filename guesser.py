@@ -54,24 +54,21 @@ def unique_characters(word):
 def score_word(word, characters):
     """Score a word based on the value of each of its characters."""
     score = 0
-    for character in word:
+    for character in unique_characters(word):
         score += characters[character]
     return score
 
 
-def guess_word(words, characters):
-    """Find the word with the highest score."""
-    best_score = 0
-    best_word = ""
-    for word in words:
-        score = score_word(unique_characters(word), characters)
-        if score > best_score:
-            best_score = score
-            best_word = word
-    return best_word
+def score_word_bank(words, characters):
+    word_scores = {word: score_word(word, characters) for word in words}
+    word_scores = {
+        word: score
+        for word, score in sorted(word_scores.items(), key=lambda x: x[1], reverse=True)
+    }
+    return word_scores
 
 
-def filter_words(guess, result, words):
+def filter_word_bank(guess, result, words):
     """
     guess : word that was guessed (str)
     result : "=" for correct char and place, "+" for correct char wrong place, "-" for incorrect char
@@ -86,36 +83,34 @@ def filter_words(guess, result, words):
             words = [word for word in words if char not in word]
         else:
             result = input("Invalid result, try again: ")
-            return filter_words(guess, result, words)
+            return filter_word_bank(guess, result, words)
     return words
 
 
-def main(guess, words, characters):
+def main(words, characters):
+
+    # Get the scores for the top 5 words
+    word_scores = score_word_bank(words, characters)
+    print({word: score for word, score in list(word_scores.items())[:5]})
 
     # Input a guess and get the result
     guess = get_guess()
     result = get_evalulation()
 
-    words = filter_words(guess, result, words)
-    best_guess = guess_word(words, characters)
-    return best_guess, words
+    # Filter words based on the result
+    words = filter_word_bank(guess, result, list(word_scores.keys()))
+    return words
 
 
 if __name__ == "__main__":
+
+    # Get the words and character counts
     words = read_words()
     characters = count_characters(words)
 
-    # Pick one of the top-100 words as a starting guess
-    word_scores = {}
-    for word in words:
-        word_scores[word] = score_word(unique_characters(word), characters)
-    word_scores = sorted(word_scores.items(), key=lambda x: x[1], reverse=True)
-    word_scores = [word for word, _ in word_scores[:100]]
-    guess = random.sample(word_scores, k=1)[0]
-
-    i = 1
-    while i <= 6:
+    n_tries = 1
+    while n_tries <= 6:
         try:
-            guess, words = main(guess, words, characters)
-        except TypeError:
+            words = main(words, characters)
+            n_tries += 1
             break
