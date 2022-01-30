@@ -1,4 +1,4 @@
-from collections import Counter
+from collections import Counter, defaultdict
 
 
 def read_words():
@@ -66,24 +66,38 @@ def score_word_bank(words, characters):
     return word_scores
 
 
+def is_valid_word(word, char, evals):
+    truths = []
+    for pair in evals:
+        for idx, eval in pair.items():
+            if eval == "=":
+                truths.append(word[idx] == char)
+            elif eval == "+":
+                truths.append(char in word and word[idx] != char)
+            elif eval == "-":
+                truths.append(char not in word)
+            else:
+                raise ValueError(f"Something is wrong with the result.")
+    return any(truths)
+
+
 def filter_word_bank(guess, result, words):
     """
+    TODO: Redo this with regex
+
     guess : word that was guessed (str)
     result : "=" for correct char and place, "+" for correct char wrong place, "-" for incorrect char
     """
-    # TODO: Redo this with regex
     if result is None:
         return None
+
+    chareval = defaultdict(list)
     for idx, (char, eval) in enumerate(zip(guess, result)):
-        if eval == "=":
-            words = [word for word in words if word[idx] == char]
-        elif eval == "+":
-            words = [word for word in words if char in word and word[idx] != char]
-        elif eval == "-":
-            words = [word for word in words if char not in word]
-        else:
-            result = input("Invalid result, try again: ")
-            return filter_word_bank(guess, result, words)
+        chareval[char].append({idx: eval})
+
+    for char, evals in chareval.items():
+        words = [word for word in words if is_valid_word(word, char, evals)]
+
     return words
 
 
